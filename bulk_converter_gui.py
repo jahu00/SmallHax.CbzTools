@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from classes import CompressJob
@@ -42,21 +43,24 @@ class BulkConverterGUI(tk.Frame):
         self.tree.column("src", minwidth=0, width=100)
         self.tree.heading("dst", text="Destination")
         self.tree.column("dst", minwidth=0, width=100)
-        self.tree.grid(row=4, column=0, columnspan=3, padx=(10, 23), pady=10, sticky="nsew")
+        self.tree.grid(row=4, column=0, columnspan=3, padx=(10, 23), pady=(10, 5), sticky="nsew")
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.grid(row=4, column=2, columnspan=3, padx=10, pady=10, sticky="nse")
+        self.scrollbar.grid(row=4, column=2, columnspan=3, padx=10, pady=(10, 5), sticky="nse")
 
         self.action_frame = tk.Frame(self)
-        self.action_frame.grid(row=5, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        self.action_frame.grid(row=5, column=0, columnspan=3, sticky="nsew")
         self.load_button = ttk.Button(self.action_frame, text="Load", command=self.load_jobs)
         self.load_button.pack(side=tk.LEFT, padx=10, pady=5)
         self.convert_button = ttk.Button(self.action_frame, text="Convert", command=self.convert_jobs)
+        self.convert_button.pack(side=tk.RIGHT, padx=10, pady=5)
 
     def browse_source(self):
         path = filedialog.askdirectory()
         if path:
             self.path_var.set(path)
+            self.clear_jobs()
+            self.clear_tree()
     
     def browse_destination(self):
         path = filedialog.askdirectory()
@@ -64,12 +68,24 @@ class BulkConverterGUI(tk.Frame):
             self.dst_var.set(path)
 
     def load_jobs(self):
-        jobs = CompressJob.get_jobs(self.path_var.get(), self.dst_var.get(), self.rule_var.get(), self.replace_var.get())
+        path = self.path_var.get()
+        if not os.path.exists(path):
+            messagebox.showwarning("Warning", f"Path \"{path}\" does not exist.")
+            return
+        self.jobs = CompressJob.get_jobs(self.path_var.get(), self.dst_var.get(), self.rule_var.get(), self.replace_var.get())
+        self.clear_tree()
+        self.populate_tree()
 
-    def populate_tree(self):
+    def clear_jobs(self):
+        self.jobs = []
+        self.clear_tree()
+
+    def clear_tree(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
+
+    def populate_tree(self):
         for job in self.jobs:
             self.tree.insert('', 'end', values=[job.src_name, job.dst_name])
 

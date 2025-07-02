@@ -18,9 +18,12 @@ class CompressJob():
     @staticmethod
     def get_jobs(path, dst, rule = None, replace = None):
         jobs = []
-        subfolders = os. listdir(args.path)
+        subfolders = os. listdir(path)
         subfolders.sort()
         for folder in subfolders:
+            if not os.path.isdir(os.path.join(path, folder)):
+                continue
+
             job = CompressJob.get_job(folder, dst, rule, replace)
             jobs.append(job)
         
