@@ -23,13 +23,13 @@ for folder in subfolders:
 
     src_path = os.path.join(args.path, folder)
     dst_path = os.path.join(dst, dst_name)
-    items.append((src_path, dst_path))
+    items.append((src_path, dst_path, folder))
 
 # sort items by source path
 items.sort(key=lambda x: x[0])
 
 for item in items:
-    print(item[0] + "->" + item[1])
+    print(item[2] + "->" + item[1])
 
 if not args.confirmn:
     confirm = input("Apply operations? (y/n) ").lower() == "y"
