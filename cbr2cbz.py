@@ -55,9 +55,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Convert RAR to CBZ using 7z.")
-    parser.add_argument("src", help="Input file or directory with mask", required=True)
-    parser.add_argument("dst", help="Output file name or directory", required=False, default=None)
-    #parser.add_argument("--tempDir", default="C:\\temp\\scripts", help="Temporary directory for extraction")
+    parser.add_argument("--src", type=str, help="Input file or directory with mask", required=True)
+    parser.add_argument("--dst", type=str,help="Output file name or directory", required=False, default=None)
+    parser.add_argument("--tempDir", type=str, required=False, default=None, help="Temporary directory for extraction")
     parser.add_argument("-d", "--delete", action="store_true", help="Delete the source file after conversion")
 
     args = parser.parse_args()
