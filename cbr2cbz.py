@@ -38,7 +38,15 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
     
     temp_dir = os.path.join(temp_path, str(uuid.uuid4()))
 
-    for file_path in [f for f in os.listdir(directory) if f.endswith(mask)]:
+    filter = lambda x,y: x == y
+    if mask.startswith("*") and mask.endswith("*"):
+        filter = lambda x, y: x.contains(y.replace("*", ""))
+    elif mask.starssWith("*"):
+        filter = lambda x, y: x.endsWith(y.replace("*", ""))
+    elif mask.endsWith("*"):
+        filter = lambda x, y: x.startsWith(y.replace("*", ""))
+
+    for file_path in [f for f in os.listdir(directory) if filter(f, mask)]:
         source_file = os.path.join(directory, file_path)
         print(f"Processing file: {source_file}")
         file_name = os.path.splitext(os.path.basename(source_file))[0]
