@@ -4,28 +4,43 @@ import subprocess
 import sys
 import uuid
 
-def is_7z_installed():
+def find_7z_executable():
+    commands = ["7z", "7zz", "7za"]
+    for command in commands:
+        if is_7z_installed(command):
+            return command
+    return None
+
+
+def is_7z_installed(command):
     """Check if 7z is installed."""
     try:
-        subprocess.run(["7z"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run([command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
-def convert_files(input_file, target_path=None, temp_dir=None, delete_original=False):
-    if not is_7z_installed():
+def convert_files(input_file, target_path=None, temp_path=None, delete_original=False):
+    command = find_7z_executable()
+    if command is None:
         print("7z is not installed or not in the system PATH.")
         sys.exit(1)
 
-    temp_dir = temp_dir or "./" + str(uuid.uuid4())
+    print("7z executable found: ", command)
+
     directory = os.path.dirname(input_file)
     mask = os.path.basename(input_file)
     if target_path is None:
         target_path = directory
 
+    if temp_path is None:
+        temp_path = os.path.dirname(target_path)
+    
+    temp_dir = os.path.join(temp_path, str(uuid.uuid4()))
+
     for file_path in [f for f in os.listdir(directory) if f.endswith(mask)]:
         source_file = os.path.join(directory, file_path)
-        source_dir = os.path.dirname(source_file)
+        print(f"Processing file: {source_file}")
         file_name = os.path.splitext(os.path.basename(source_file))[0]
         output_dir = os.path.join(temp_dir, file_name)
 
@@ -33,14 +48,14 @@ def convert_files(input_file, target_path=None, temp_dir=None, delete_original=F
         os.makedirs(output_dir, exist_ok=True)
 
         # Extract the RAR file
-        subprocess.run(["7z", "x", source_file, "-o" + output_dir], check=True)
+        subprocess.run([command, "x", source_file, "-o" + output_dir], check=True)
 
         # Compress the extracted files into a ZIP file
         if os.path.isdir(target_path):
             zip_file = os.path.join(target_path, f"{file_name}.cbz")
         else:
             zip_file = target_path
-        subprocess.run(["7z", "a", "-tzip", zip_file, os.path.join(output_dir, "*")], check=True)
+        subprocess.run([command, "a", "-tzip", zip_file, os.path.join(output_dir, "*")], check=True)
 
         # Clean up the extracted files
         shutil.rmtree(temp_dir)
@@ -62,4 +77,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    convert_files(args.src, args.dst, temp_dir=args.tempDir, delete_original=args.delete)
+    convert_files(args.src, args.dst, temp_path=args.tempDir, delete_original=args.delete)
