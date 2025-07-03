@@ -41,10 +41,10 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
     filter = lambda x,y: x == y
     if mask.startswith("*") and mask.endswith("*"):
         filter = lambda x, y: x.contains(y.replace("*", ""))
-    elif mask.starssWith("*"):
-        filter = lambda x, y: x.endsWith(y.replace("*", ""))
-    elif mask.endsWith("*"):
-        filter = lambda x, y: x.startsWith(y.replace("*", ""))
+    elif mask.startswith("*"):
+        filter = lambda x, y: x.endswith(y.replace("*", ""))
+    elif mask.endswith("*"):
+        filter = lambda x, y: x.startswith(y.replace("*", ""))
 
     for file_path in [f for f in os.listdir(directory) if filter(f, mask)]:
         source_file = os.path.join(directory, file_path)
