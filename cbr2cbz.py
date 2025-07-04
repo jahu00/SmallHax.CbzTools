@@ -20,6 +20,10 @@ def is_7z_installed(command):
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
+def verbose_print(*args):
+    if verbose:
+        print("[VERBOSE]", *args)
+
 def convert_files(input_file, target_path=None, temp_path=None, delete_original=False):
     command = find_7z_executable()
     if command is None:
@@ -29,14 +33,17 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
     print("7z executable found: ", command)
 
     directory = os.path.dirname(input_file)
+    verbose_print("Input directory: ", directory)
     mask = os.path.basename(input_file)
+    verbose_print("Input file mask: ", mask)
     if target_path is None:
         target_path = directory
 
     if temp_path is None:
         temp_path = os.path.dirname(target_path)
-    
+
     temp_dir = os.path.join(temp_path, str(uuid.uuid4()))
+    verbose_print("Temporary directory: ", temp_dir)
 
     filter = lambda x,y: x == y
     if mask.startswith("*") and mask.endswith("*"):
@@ -51,6 +58,8 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         print(f"Processing file: {source_file}")
         file_name = os.path.splitext(os.path.basename(source_file))[0]
         output_dir = os.path.join(temp_dir, file_name)
+        verbose_print("Output directory: ", output_dir)
+        sys.exit(1)
 
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
@@ -66,13 +75,16 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         subprocess.run([command, "a", "-tzip", zip_file, os.path.join(output_dir, "*")], check=True)
 
         # Clean up the extracted files
-        shutil.rmtree(temp_dir)
+        shutil.rmtree(output_dir)
 
         # Delete the source file if the switch is set
         if delete_original:
             os.remove(source_file)
 
-        print(f"Conversion complete: {zip_file}")
+    shutil.rmtree(temp_dir)
+    print(f"Conversion complete: {zip_file}")
+
+verbose = False
 
 if __name__ == "__main__":
     import argparse
@@ -82,7 +94,8 @@ if __name__ == "__main__":
     parser.add_argument("--dst", type=str,help="Output file name or directory", required=False, default=None)
     parser.add_argument("--tempDir", type=str, required=False, default=None, help="Temporary directory for extraction")
     parser.add_argument("-d", "--delete", action="store_true", help="Delete the source file after conversion")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 
     args = parser.parse_args()
-
+    verbose = args.verbose
     convert_files(args.src, args.dst, temp_path=args.tempDir, delete_original=args.delete)
