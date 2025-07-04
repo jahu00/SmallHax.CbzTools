@@ -49,7 +49,7 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         else:
             temp_path = os.path.dirname(target_path)
 
-    temp_dir = os.path.join(temp_path, str(uuid.uuid4()))
+    temp_dir = temp_path
     verbose_print("Temporary directory: ", temp_dir)
 
     filter = lambda x,y: x == y
@@ -64,14 +64,12 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         source_file = os.path.join(directory, file_path)
         print(f"Processing file: {source_file}")
         file_name = os.path.splitext(os.path.basename(source_file))[0]
-        output_dir = os.path.join(temp_dir, file_name)
-        verbose_print("Output directory: ", output_dir)
-        sys.exit(1)
+        output_dir = os.path.join(temp_dir, str(uuid.uuid4()))
 
-        # Create output directory
-        os.makedirs(output_dir, exist_ok=True)
+        verbose_print("Creating output directory: ", output_dir)
+        os.makedirs(output_dir, exist_ok=False)
 
-        # Extract the RAR file
+        verbose_print("Extracting archive: ", source_file)
         subprocess.run([command, "x", source_file, "-o" + output_dir], check=True)
 
         # Compress the extracted files into a ZIP file
@@ -79,8 +77,10 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
             zip_file = os.path.join(target_path, f"{file_name}.cbz")
         else:
             zip_file = target_path
+        verbose_print("Creating archive: ", zip_file)
         subprocess.run([command, "a", "-tzip", zip_file, os.path.join(output_dir, "*")], check=True)
 
+        verbose_print("Delete output directory: ", output_dir)
         # Clean up the extracted files
         shutil.rmtree(output_dir)
 
@@ -88,7 +88,6 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         if delete_original:
             os.remove(source_file)
 
-    shutil.rmtree(temp_dir)
     print(f"Conversion complete: {zip_file}")
 
 verbose = False
