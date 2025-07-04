@@ -32,6 +32,10 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
 
     print("7z executable found: ", command)
 
+    if os.path.isdir(input_file):
+        print("Directory is not allowed as source. Only file or mask is allowed.")
+        sys.exit(1)
+
     directory = os.path.dirname(input_file)
     verbose_print("Input directory: ", directory)
     mask = os.path.basename(input_file)
@@ -40,7 +44,10 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         target_path = directory
 
     if temp_path is None:
-        temp_path = os.path.dirname(target_path)
+        if os.path.isdir(target_path):
+            temp_path = target_path
+        else:
+            temp_path = os.path.dirname(target_path)
 
     temp_dir = os.path.join(temp_path, str(uuid.uuid4()))
     verbose_print("Temporary directory: ", temp_dir)
