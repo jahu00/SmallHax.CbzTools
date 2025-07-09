@@ -20,8 +20,9 @@ class CompressJob():
             for root, dirs, files in self.walk(self.src_path):
                 for file in files:
                     path = os.path.join(root, file)
-                    logger("Writing file: {path} => {file}")
+                    logger.debug("Writing file: {path} => {file}")
                     zf.write(path, arcname=file)
+        logger.info(f"Created: {self.dst_name}")
 
     @staticmethod
     def walk(path):
