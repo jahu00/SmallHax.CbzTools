@@ -72,7 +72,21 @@ class BulkConverterGUI(tk.Frame):
         if not os.path.exists(path):
             messagebox.showwarning("Warning", f"Path \"{path}\" does not exist.")
             return
-        self.jobs = CompressJob.get_jobs(self.path_var.get(), self.dst_var.get(), self.rule_var.get(), self.replace_var.get())
+        
+        src = self.path_var.get()
+        dst = self.dst_var.get()
+        if dst == "":
+            dst = src
+
+        rule = self.rule_var.get()
+        if rule == "":
+            rule = None
+
+        replace = self.replace_var.get()
+        if replace == "":
+            replace = None
+            
+        self.jobs = CompressJob.get_jobs(src, dst, rule, replace)
         self.clear_tree()
         self.populate_tree()
 
