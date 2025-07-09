@@ -85,7 +85,7 @@ class BulkConverterGUI(tk.Frame):
         replace = self.replace_var.get()
         if replace == "":
             replace = None
-            
+
         self.jobs = CompressJob.get_jobs(src, dst, rule, replace)
         self.clear_tree()
         self.populate_tree()
@@ -113,9 +113,21 @@ class BulkConverterGUI(tk.Frame):
         messagebox.showinfo("Done", "Operation completed.")
 
 
-window = tk.Tk()
-window.title("Bulk Converter GUi")
-window.geometry("480x640")
-app = BulkConverterGUI(master=window)
-app.pack(fill="both", expand=True)
-window.mainloop()
+if __name__ == "__main__":
+    import argparse
+    import logging
+    import sys
+
+    parser = argparse.ArgumentParser(description="Makes a cbz file out of every folder at a given path")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+
+    args = parser.parse_args()
+
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG if args.verbose else logging.INFO)
+
+    window = tk.Tk()
+    window.title("Bulk Converter GUi")
+    window.geometry("480x640")
+    app = BulkConverterGUI(master=window)
+    app.pack(fill="both", expand=True)
+    window.mainloop()

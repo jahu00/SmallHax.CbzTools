@@ -1,6 +1,10 @@
 import re
 import os
 from zipfile import ZipFile
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class CompressJob():
     def __init__(self, src_path: str, dst_path: str, src_name: str = None, dst_name: str = None):
@@ -10,10 +14,14 @@ class CompressJob():
         self.dst_name = dst_name or os.path.basename(dst_path)
 
     def compress(self):
+        logger.debug(f"Creating file: {self.dst_path}")
         with ZipFile(self.dst_path, "w") as zf:
+            logger.debug(f"  Scanning: {self.src_path}")
             for root, dirs, files in os.walk(self.src_path):
                 for file in files:
-                    zf.write(os.path.join(root, file), arcname=file)
+                    path = os.path.join(root, file)
+                    logger("    Writing file: {path} => {file}")
+                    zf.write(path, arcname=file)
 
     @staticmethod
     def get_jobs(path, dst, rule = None, replace = None):
