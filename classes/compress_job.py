@@ -16,12 +16,31 @@ class CompressJob():
     def compress(self):
         logger.debug(f"Creating file: {self.dst_path}")
         with ZipFile(self.dst_path, "w") as zf:
-            logger.debug(f"  Scanning: {self.src_path}")
-            for root, dirs, files in os.walk(self.src_path):
+            logger.debug(f"Scanning: {self.src_path}")
+            for root, dirs, files in self.walk(self.src_path):
                 for file in files:
                     path = os.path.join(root, file)
-                    logger("    Writing file: {path} => {file}")
+                    logger("Writing file: {path} => {file}")
                     zf.write(path, arcname=file)
+
+    @staticmethod
+    def walk(path):
+        children = os. listdir(path)
+        #children.sort()
+        dirs = []
+        files = []
+        for child in children:
+            child_path = os.path.join(path, child)
+            if os.path.isdir(child_path):
+                dirs += child
+            else:
+                files.append(child)
+
+        yield (path, dirs, files)
+        for dir in dirs:
+            dir_path = os.path.join(path, dir)
+            yield from CompressJob.walk(dir_path)
+        
 
     @staticmethod
     def get_jobs(path, dst, rule = None, replace = None):
