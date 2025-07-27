@@ -1,5 +1,6 @@
 import os
 import tkinter as tk
+from collections import Counter
 from tkinter import filedialog, messagebox, ttk
 from classes import CompressJob
 
@@ -103,6 +104,16 @@ class BulkConverterGUI(tk.Frame):
         self.jobs = CompressJob.get_jobs(src, dst, rule, replace, ignore_not_matching=self.ignore_missmatching_var.get())
         self.clear_tree()
         self.populate_tree()
+
+        duplicates = self.find_duplicates()
+
+        if len(duplicates) > 0:
+            messagebox.showwarning("Duplicate output names", "\n".join(duplicates))
+
+    def find_duplicates(self):
+        names = [job.dst_name for job in self.jobs]
+        duplicates = [name for name, count in Counter(names).items() if count > 1]
+        return duplicates
 
     def clear_jobs(self):
         self.jobs = []

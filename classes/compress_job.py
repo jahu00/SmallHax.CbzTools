@@ -74,7 +74,7 @@ class CompressJob():
         src_name = os.path.basename(src)
         dst_name = src_name + ".cbz"
         if rule and replace and re.search(rule, src_name):
-            dst_name = re.sub(rule, replace, src_name)
+            dst_name = re.sub(rule, replace, src_name, count=1)
 
         src_path = src
         dst_path = os.path.join(dst, dst_name)
