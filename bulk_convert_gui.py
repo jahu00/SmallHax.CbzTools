@@ -11,7 +11,9 @@ class BulkConverterGUI(tk.Frame):
         self.dst_var = tk.StringVar()
         self.rule_var = tk.StringVar()
         self.replace_var = tk.StringVar()
-        self.confirmn_var = tk.BooleanVar()
+        #self.confirm_var = tk.BooleanVar()
+        self.auto_cbz_var = tk.BooleanVar(value=True)
+        self.ignore_missmatching_var = tk.BooleanVar(value=False)
 
         # Layout
         self.grid_columnconfigure(1, weight=1)
@@ -32,9 +34,19 @@ class BulkConverterGUI(tk.Frame):
         self.rule_entry = tk.Entry(self, textvariable=self.rule_var)
         self.rule_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
 
-        tk.Label(self, text="Replace").grid(row=3, column=0, padx=10, pady=5)
+        self.regex_options = tk.Frame(self)
+        self.regex_options.grid(row=2, column=2, padx=10, pady=5)
+        tk.Checkbutton(self.regex_options, variable=self.ignore_missmatching_var).pack(side=tk.LEFT)
+        tk.Label(self.regex_options, text="Match only").pack(side=tk.LEFT)
+
+        tk.Label(self, text="Replace:").grid(row=3, column=0, padx=10, pady=5)
         self.replace_entry = tk.Entry(self, textvariable=self.replace_var)
         self.replace_entry.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+
+        self.replace_options = tk.Frame(self)
+        self.replace_options.grid(row=3, column=2, padx=10, pady=5)
+        tk.Checkbutton(self.replace_options, variable=self.auto_cbz_var).pack(side=tk.LEFT)
+        tk.Label(self.replace_options, text=".cbz").pack(side=tk.LEFT)
 
         columns = ("src", "dst")
         self.tree = ttk.Treeview(self, columns=columns)
@@ -85,8 +97,10 @@ class BulkConverterGUI(tk.Frame):
         replace = self.replace_var.get()
         if replace == "":
             replace = None
+        elif self.auto_cbz_var.get():
+            replace = replace + ".cbz"
 
-        self.jobs = CompressJob.get_jobs(src, dst, rule, replace)
+        self.jobs = CompressJob.get_jobs(src, dst, rule, replace, ignore_not_matching=self.ignore_missmatching_var.get())
         self.clear_tree()
         self.populate_tree()
 

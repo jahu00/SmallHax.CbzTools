@@ -50,13 +50,18 @@ class CompressJob():
         
 
     @staticmethod
-    def get_jobs(path, dst, rule = None, replace = None):
+    def get_jobs(path, dst, rule = None, replace = None, ignore_not_matching = False):
         jobs = []
         children = os. listdir(path)
         children.sort()
         for child in children:
             child_path = os.path.join(path, child)
             if not os.path.isdir(child_path):
+                logger.debug(f"Ignoring file: {child_path}")
+                continue
+
+            if rule and ignore_not_matching and not re.search(rule, child_path):
+                logger.debug(f"Ignoring missmatched: {child_path}")
                 continue
 
             job = CompressJob.get_job(child_path, dst, rule, replace)
@@ -68,7 +73,7 @@ class CompressJob():
     def get_job(src, dst, rule = None, replace = None):
         src_name = os.path.basename(src)
         dst_name = src_name + ".cbz"
-        if rule:
+        if rule and replace and re.search(rule, src_name):
             dst_name = re.sub(rule, replace, src_name)
 
         src_path = src
