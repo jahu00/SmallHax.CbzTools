@@ -14,27 +14,33 @@ class CompressJob():
         self.dst_name = dst_name or os.path.basename(dst_path)
 
     def compress(self):
-        logger.debug(f"Creating file: {self.dst_path}")
+        logger.info(f"Creating file: {self.dst_path}")
         with ZipFile(self.dst_path, "w") as zf:
             logger.debug(f"Scanning: {self.src_path}")
             for root, dirs, files in self.walk(self.src_path):
                 for file in files:
                     path = os.path.join(root, file)
-                    logger.debug(f"Writing file: {path} => {file}")
-                    zf.write(path, arcname=file)
+                    rel_path = os.path.relpath(path, self.src_path)
+                    logger.debug(f"Writing file: {path} => {rel_path}")
+                    zf.write(path, arcname=rel_path)
         logger.info(f"Created: {self.dst_name}")
 
     @staticmethod
     def walk(path):
+        logger.debug(f"Walking path: {path}")
         children = os. listdir(path)
         #children.sort()
         dirs = []
         files = []
         for child in children:
+            logger.debug(f"Found child: {child}")
             child_path = os.path.join(path, child)
+            logger.debug(f"Full child path: {child_path}")
             if os.path.isdir(child_path):
-                dirs += child
+                logger.debug(f"Processing as dir: {child_path}")
+                dirs.append(child)
             else:
+                logger.debug(f"Processing as file: {child_path}")
                 files.append(child)
 
         yield (path, dirs, files)
