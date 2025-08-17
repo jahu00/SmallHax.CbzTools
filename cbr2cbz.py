@@ -37,6 +37,10 @@ def convert_files(input_file, target_path=None, temp_path=None, delete_original=
         sys.exit(1)
 
     directory = os.path.dirname(input_file)
+    
+    if directory == "":
+        directory = "."
+    
     verbose_print("Input directory: ", directory)
     mask = os.path.basename(input_file)
     verbose_print("Input file mask: ", mask)
